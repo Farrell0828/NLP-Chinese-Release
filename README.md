@@ -50,7 +50,7 @@ cd code
 运行脚本 `preprocess.py` 会完成所有的数据预处理：
 ```
 python preprocess.py \
-    --input-tc-dirpath ../tcdata/ \
+    --input-tc-dirpath ../tcdata/nlp_round1_data/ \
     --input-additional-dirpath ../user_data/additional_data/ \
     --output-dirpath ../user_data/preprocessed_data/
 ```
@@ -84,6 +84,8 @@ python train.py \
     --save-dirpath ../user_data/checkpoints/retrain/ocnli_pre/
 ```
 训练集样本数大约40万，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2万步（接近但不到2个epoch），每1万步做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时8.5小时。
+
+每次训练运行 `--save-dirpath` 指定的文件夹下除了保存验证集最优的模型权重文件 `checkpoint.pth` 之外，还会保存运行本次训练使用的配置文件 `config.yml`，训练过程的控制台输出 `log.txt` 以及用于使用 TensorBoard 可视化训练过程的 `events.out.tfevents` 文件。
 
 ### 在 OCNLI 数据集上继续预训练 OCNLI 单任务模型
 这一步首先加载上一步保存的模型权重，然后以 OCNLI 的训练集为训练集，以 OCNLI的验证集为验证集来继续预训练 OCNLI 单任务模型，使用的配置文件为 `roberta-large-first-ocnli-ce-uni.yml`
@@ -136,7 +138,7 @@ python train.py \
 训练样本数大约2.8万，以32的有效批样本数（因显存限制，梯度累计16步，实际样本为2）训练2个epoch，每个epoch结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
 
 ### 参数平均与融合
-脚本 `param_avg.py` 用来读取三个单任务模型的权重文件，将共享部分的参数取均值并融合其余参数组成硬共享模式需要的新的模型权重文件。
+脚本 `param_avg.py` 用来读取三个单任务模型的权重文件，将共享部分的参数取均值并融合其余参数组成硬共享模式需要的新的模型权重从而生成一个新的权重文件。
 
 运行以下命令执行这一过程：
 ```
@@ -156,32 +158,47 @@ python train.py \
 运行以下命令执行这一步训练：
 ```
 python train.py \
-    --config roberta-large-first-hard-ce-uni.yml \
+    --config ../user_data/configs/roberta-large-first-hard-ce-uni.yml \
     --gpu-ids 0 \
     --load-pthpath ../user_data/checkpoints/retrain/checkpoint_averaged.pth \
-    --save-dirpath ../user_data/checkpoints/retrain/checkpoint.pth
+    --save-dirpath ../user_data/checkpoints/retrain/fine_tune/
+    --no-validate
 ```
+`--load-pthpath` 需指定为平均与融合之后生成的模型权重 `.pth` 文件路径。
 
+`--save-dirpath` 指定的文件夹下生成的 `checkpoint.pth` 文件即是最终的模型权重文件。
+
+`--no-validate` 代表不切分验证集，将使用所有的竞赛数据进行训练。
+
+在这一步训练中我们首先仅使用训练集来训练（不加 `--no-validate` 这个命令行参数），通过在验证集上评估得到了最优的学习率与训练的epoch数量，然后使用同样的超参数在整个数据集上重新训练了一个模型。最终我们将这两个模型在测试集B上做预测提交了两次，使用所有数据训练的模型分值略高，也是我们的最优成绩。
+
+## 关于可复现性的说明
+
+- 代码中所有的随机数种子都有手动固定，在我们的实验中同样的数据，同样的配置，同样的代码在同样硬件的机器下可以保证训练结果基本完全一致。
+
+- 我们尝试将数据预处理流程在天池实验室复现，逐条对比发现 OCEMOTION 数据的处理结果和我们实际训练时使用的有4条略有不同。下面是这4对数据的具体内容。
+
+|训练使用|复现生成|
+|:-|:-|
+|你是哒哒的马蹄。晚安。么么~|^^^^你是哒哒的马蹄。晚安。么么~|
+|我自己[泪][泪][泪]考这么点儿╯_╰t^tt^tt^tt^tt^tt^tt^t|我自己[泪][考这么点儿╯_╰^^^^tt^tt^tt^t|
+|俺老师。有一次对全班训话,估计说话太激动了,上排假牙掉了下来。大家想笑又不敢笑.后来含着笑看到他把假牙又装了上去^^^^^^^|俺老师。有一次对全班训话,估计说话太激动了,上排假牙掉了下来。大家想笑又不敢笑.后来含着笑看到他把假牙又装了上去^^^^^^|
+|婉婷妹子婉婷妹子婉婷妹子,16天哇。加油加油加油![给力][钟][钟][钟][钟][钟][钟][钟][钟][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞]|婉婷妹子婉婷妹子婉婷妹子,16天哇。加油加油加油![给力][钟][钟][钟][钟][钟][钟][钟][钟][赞][赞][赞][赞][赞][赞][赞][赞]|
 
 
 ## 预测
-The evaluate script simply load the model checkpoint specified by `--load-pthpath` and report the validation loss and score.
-```
-python evaluate.py \
-    --config checkpoints/run1/config.yml \
-    --gpu-ids 0 \
-    --load-pthpath checkpoints/run1/checkpoint.pth \
-```
-
-## Predict
-The predict script load the model checkpoint specified by `--load-pthpath` and predict on testset. Then, write the predict results to a `.zip` file which could directly upload to TianChi evaluate server.
+运行以下命令在测试集B上进行预测并将结果写入指定文件夹：
 ```
 python predict.py \
-    --config checkpoints/run1/config.yml \
-    --gup-ids 0 \
-    --load-pthpath checkpoints/run1/checkpoint.pth \
-    --save-zippath submissions/submission.zip
+    --config ../user_data/checkpoints/release/config.yml \
+    --gpu-ids 0 \
+    --load-pthpath ../user_data/checkpoints/release/checkpoint.pth \
+    --save-zippath ../prediction_result/submit.zip
 ```
+
+`--config` 需要保证指定的和
+示例中 `--load-pthpath` 指定的为我们上传的最终 `checkpoint.pth` 模型权重文件，如果运行了
+
 
 [1]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 [2]: https://storage.googleapis.com/cluebenchmark/tasks/ocnli_public.zip

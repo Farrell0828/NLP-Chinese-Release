@@ -114,19 +114,24 @@ def write_to_disk(predict_results, sample_id, task_type_id, output_zippath):
                 json.dump(line, fp)
                 fp.write('\n')
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        ocnli_path = os.path.join(tmpdirname, 'ocnli_predict.json')
-        ocemotion_path = os.path.join(tmpdirname, 'ocemotion_predict.json')
-        tnews_path = os.path.join(tmpdirname, 'tnews_predict.json')
+    dirname = os.path.dirname(output_zippath)
+    ocnli_path = os.path.join(dirname, 'ocnli_predict.json')
+    ocemotion_path = os.path.join(dirname, 'ocemotion_predict.json')
+    tnews_path = os.path.join(dirname, 'tnews_predict.json')
 
-        write_json(ocnli, ocnli_path)
-        write_json(ocemotion, ocemotion_path)
-        write_json(tnews, tnews_path)
+    write_json(ocnli, ocnli_path)
+    print('Writed ocnli predict results to', ocnli_path)
 
-        with ZipFile(output_zippath, mode='w') as myzip:
-            myzip.write(ocnli_path, arcname='ocnli_predict.json')
-            myzip.write(ocemotion_path, arcname='ocemotion_predict.json')
-            myzip.write(tnews_path, arcname='tnews_predict.json')
+    write_json(ocemotion, ocemotion_path)
+    print('Writed ocemotion predict results to', ocemotion_path)
+
+    write_json(tnews, tnews_path)
+    print('Writed tnews predict results to', tnews_path)
+
+    with ZipFile(output_zippath, mode='w') as myzip:
+        myzip.write(ocnli_path, arcname='ocnli_predict.json')
+        myzip.write(ocemotion_path, arcname='ocemotion_predict.json')
+        myzip.write(tnews_path, arcname='tnews_predict.json')
 
 
 def main():
