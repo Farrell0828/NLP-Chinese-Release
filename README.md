@@ -60,10 +60,10 @@ python preprocess.py \
 1. CLUE 官方提供的 [OCNLI][2]，[CMNLI][3] 和 [TNEWS][4] 这三个任务的公开数据集；
 2. 公开可获取的关于【今日头条新闻标题分类的数据集】。
 
-`--output-dirpath` 为预处理后的文件的存放文件夹路径。
+`--output-dirpath` 为预处理后的文件的存放的文件夹路径，如果文件夹不存在会首先建立相应的文件夹。
 
 所执行的预处理包括：
-- 从CLUE公开的 OCNLI，CMNLI 和 TNEWS 任务的 json 文件获取得到对应的训练集和验证集的 csv 文件并去掉标签为空的样本；
+- 从 CLUE 公开的 OCNLI，CMNLI 和 TNEWS 任务的 json 文件获取得到对应的训练集和验证集的 csv 文件并去掉标签为空的样本；
 - 将所有的全角标点符号转换成半角标点符号；
 - 将额外的今日头条新闻标题分类数据集和竞赛 TNEWS 数据集在一起做去重操作，确保额外的数据和竞赛数据（包括训练集，验证集和测试集）没有重复且竞赛数据自身没有重复。
 - 使用 `emojiswitch` 库将 OCEMOTION 数据中的不在预训练 Transformer 词汇表中的表情符号转换为对应的文字描述，例如："😭" -> ":大声哭喊的脸:"；
@@ -83,9 +83,9 @@ python train.py \
     --gpu-ids 0 \
     --save-dirpath ../user_data/checkpoints/retrain/ocnli_pre/
 ```
-训练集样本数大约40万，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2万步（接近但不到2个epoch），每1万步做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时8.5小时。
+训练集样本数大约40万，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2万步（接近但不到2个 epoch），每1万步做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹，如果文件夹不存在会首先建立相应的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时8.5小时。
 
-每次训练运行 `--save-dirpath` 指定的文件夹下除了保存验证集最优的模型权重文件 `checkpoint.pth` 之外，还会保存运行本次训练使用的配置文件 `config.yml`，训练过程的控制台输出 `log.txt` 以及用于使用 TensorBoard 可视化训练过程的 `events.out.tfevents` 文件。
+每次训练运行（包括后面每一步的训练） `--save-dirpath` 指定的文件夹下除了保存验证集最优的模型权重文件 `checkpoint.pth` 之外，还会保存运行本次训练使用的配置文件 `config.yml`，训练过程的控制台输出 `log.txt` 以及用于使用 TensorBoard 可视化训练过程的 `events.out.tfevents` 文件。
 
 ### 在 OCNLI 数据集上继续预训练 OCNLI 单任务模型
 这一步首先加载上一步保存的模型权重，然后以 OCNLI 的训练集为训练集，以 OCNLI的验证集为验证集来继续预训练 OCNLI 单任务模型，使用的配置文件为 `roberta-large-first-ocnli-ce-uni.yml`
@@ -98,7 +98,7 @@ python train.py \
     --load-pthpath ../user_data/checkpoints/retrain/ocnli_pre/checkpoint.pth \
     --save-dirpath ../user_data/checkpoints/retrain/ocnli/
 ```
-应指定 `--load-pthpath` 命令行参数来加载上一步保存的 checkpoint。训练集样本数5万左右，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2个epoch，每个epoch结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
+应指定 `--load-pthpath` 命令行参数来加载上一步保存的 checkpoint。训练集样本数5万左右，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
 
 ### 在 TNEWS 额外数据集上预训练 TNEWS 单任务模型
 这一步以处理后的今日头条标题分类额外数据集为训练集，以 TNEWS 验证集为验证集来预训练 TNEWS 单任务模型，使用的配置文件为 `roberta-large-first-tnews-pre-ce-uni.yml`。
@@ -110,7 +110,7 @@ python train.py \
     --gpu-ids 0 \
     --save-dirpath ../user_data/checkpoints/retrain/tnews_pre/
 ```
-训练样本数大约23.5万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个epoch，每个epoch结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时3.5小时。
+训练样本数大约23.5万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时3.5小时。
 
 ### 在 TNEWS 数据集上继续预训练 TNEWS 单任务模型
 这一步首先加载上一步保存的模型权重，然后以 TNEWS 训练集为训练集，以 TNEWS 验证集为验证集来继续预训练 TNEWS 单任务模型，使用的配置文件为 `roberta-large-first-tnews-ce-uni.yml`。
@@ -123,7 +123,7 @@ python train.py \
     --load-pthpath ../user_data/checkpoints/retrain/tnews_pre/checkpoint.pth \
     --save-dirpath ../user_data/checkpoints/retrain/tnews/
 ```
-训练样本数大约4.8万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个epoch，每个epoch结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时50分钟。
+训练样本数大约4.8万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时50分钟。
 
 ### 在 OCEMOTION 数据集上预训练 OCEMOTION 单任务模型
 因为 OCEMOTION 没有使用相关的额外数据集，因此直接在竞赛数据集上预训练相应的单任务模型。80%数据作为训练集，20%数据作为验证集，使用的配置文件为 `roberta-large-first-ocemotion-ce-uni.yml`。
@@ -135,14 +135,14 @@ python train.py \
     --gpu-ids 0 \
     --save-dirpath ../user_data/checkpoints/retrain/ocemotion/
 ```
-训练样本数大约2.8万，以32的有效批样本数（因显存限制，梯度累计16步，实际样本为2）训练2个epoch，每个epoch结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
+训练样本数大约2.8万，以32的有效批样本数（因显存限制，梯度累计16步，实际样本为2）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
 
 ### 参数平均与融合
 脚本 `param_avg.py` 用来读取三个单任务模型的权重文件，将共享部分的参数取均值并融合其余参数组成硬共享模式需要的新的模型权重从而生成一个新的权重文件。
 
 运行以下命令执行这一过程：
 ```
-!python param_avg.py \
+python param_avg.py \
     --input-pthpaths ../user_data/checkpoints/retrain/ocnli/checkpoint.pth \
     ../user_data/checkpoints/retrain/ocemotion/checkpoint.pth \
     ../user_data/checkpoints/retrain/tnews/checkpoint.pth \
@@ -170,7 +170,7 @@ python train.py \
 
 `--no-validate` 代表不切分验证集，将使用所有的竞赛数据进行训练。
 
-在这一步训练中我们首先仅使用训练集来训练（不加 `--no-validate` 这个命令行参数），通过在验证集上评估得到了最优的学习率与训练的epoch数量，然后使用同样的超参数在整个数据集上重新训练了一个模型。最终我们将这两个模型在测试集B上做预测提交了两次，使用所有数据训练的模型分值略高，也是我们的最优成绩。
+在这一步训练中我们首先仅使用训练集来训练（不加 `--no-validate` 这个命令行参数），通过在验证集上评估得到了最优的学习率与训练的 epoch 数量，然后使用同样的超参数在整个数据集上重新训练了一个模型。最终我们将这两个模型在测试集B上做预测提交了两次，使用所有数据训练的模型分值略高，也是我们的最优成绩。
 
 ## 关于可复现性的说明
 
@@ -196,8 +196,11 @@ python predict.py \
     --save-zippath ../prediction_result/submit.zip
 ```
 
-`--config` 需要保证指定的和
-示例中 `--load-pthpath` 指定的为我们上传的最终 `checkpoint.pth` 模型权重文件，如果运行了
+预测时 `--config` 指定的配置文件需保证和将要加载的模型训练时使用的配置文件相同，因此建议使用训练时生成并保存到指定的 `--save-dirpath` 文件夹下 `config.yml` 文件来确保搭建的模型和将要加载的权重相匹配。
+
+示例中 `--load-pthpath` 指定的为我们上传的最终模型权重文件，如果运行了上面的训练复现流程，也可以指定为最后 Fine-Tune 生成的 `checkpoint.pth` 文件。
+
+`--save-zippath` 为指定的最终预测结果 `.zip` 压缩文件路径，如果所在的文件夹不存在会首先建立相应的文件夹。最终文件夹内实际上会先生成三个任务各自对应的 `.json` 文件并保留，然后将这三个打包生成 `.zip` 文件。
 
 
 [1]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
