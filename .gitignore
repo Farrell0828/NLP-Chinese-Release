@@ -1,0 +1,7 @@
+__pycache__
+.vscode/
+data/
+tcdata/
+prediction_result/
+user_data/*
+!user_data/configs
