@@ -23,6 +23,7 @@
     + [5.8 在竞赛数据集上Fine-Tune多任务模型](#在竞赛数据集上Fine-Tune多任务模型)
   * [6 关于可复现性的说明](#关于可复现性的说明)
   * [7 预测](#预测)
+  * [8 未奏效的尝试](#未奏效的尝试)
 
 ## 方案简介
 
@@ -235,6 +236,10 @@ python train.py \
 |俺老师。有一次对全班训话,估计说话太激动了,上排假牙掉了下来。大家想笑又不敢笑.后来含着笑看到他把假牙又装了上去^^^^^^^|俺老师。有一次对全班训话,估计说话太激动了,上排假牙掉了下来。大家想笑又不敢笑.后来含着笑看到他把假牙又装了上去^^^^^^|
 |婉婷妹子婉婷妹子婉婷妹子,16天哇。加油加油加油![给力][钟][钟][钟][钟][钟][钟][钟][钟][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞][赞]|婉婷妹子婉婷妹子婉婷妹子,16天哇。加油加油加油![给力][钟][钟][钟][钟][钟][钟][钟][钟][赞][赞][赞][赞][赞][赞][赞][赞]|
 
+- 因显存限制，根据任务文本长度的大小设置了8或16步的梯度累积，从我们前期的实验来看，使用或不使用梯度累积，使用不同步数的梯度累积实验结果略有不同，且使用更大的梯度累积通常模型性能会有下降。
+
+- 虽然代码支持多 GPU 训练，但所有实验在单 GPU 上训练完成，未进行过多 GPU 的实验，无法确认在多 GPU 环境下是否可以得到一样的结果。
+
 
 ## 预测
 运行以下命令在测试集B上进行预测并将结果写入指定文件夹：
@@ -252,6 +257,17 @@ python predict.py \
 
 `--save-zippath` 为指定的最终预测结果 `.zip` 压缩文件路径，如果所在的文件夹不存在会首先建立相应的文件夹。最终文件夹内实际上会先生成三个任务各自对应的 `.json` 文件并保留，然后将这三个 `.json` 文件打包生成 `.zip` 文件。
 
+## 未奏效的尝试
+虽然我们最终的模型仅使用了较为简单的损失函数以及恒定的任务权重，但我们尝试过多种方法来提升模型性能，而大部分都没有使模型性能取得明显的提升。一些主要的尝试包括：
+
+- `DTP`：我们实现了论文 [Dynamic Task Prioritization for Multitask Learning][7] 中提出的多任务学习动态任务权重调整方法，但模型整体性能出现大幅下降。我们提供了相应的配置文件 `roberta-large-first-hard-ce-dtp.yml`。
+
+- `UCT`：我们实现了论文 [Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics][8] 提出的多任务学习动态任务权重调整方法，但模型性能没有明显的提升。我们提供了相应的配置文件 `roberta-large-first-hard-ce-uct.yml`。
+
+- `FocalLoss`：不使用经典的交叉熵损失函数，而是使用 Focal Loss 作为单样本的损失函数。模型性能没有明显提升。我们提供了相应的配置文件 `roberta-large-first-hard-focal-uni.yml`。
+
+- `SoftF1Loss`：不使用经典的交叉熵损失函数，而是使用 Soft F1 Loss 作为单样本的损失函数。模型性能没有明显提升。我们提供了相应的配置文件 `roberta-large-first-hard-f1-uni.yml`。
+
 
 [1]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 [2]: https://storage.googleapis.com/cluebenchmark/tasks/ocnli_public.zip
@@ -259,3 +275,5 @@ python predict.py \
 [4]: https://storage.googleapis.com/cluebenchmark/tasks/tnews_public.zip
 [5]: https://github.com/BenDerPan/toutiao-text-classfication-dataset
 [6]: https://huggingface.co/hfl/chinese-roberta-wwm-ext-large
+[7]: https://openaccess.thecvf.com/content_ECCV_2018/papers/Michelle_Guo_Focus_on_the_ECCV_2018_paper.pdf
+[8]: https://arxiv.org/pdf/1705.07115.pdf

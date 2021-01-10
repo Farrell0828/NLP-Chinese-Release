@@ -1,0 +1,44 @@
+dataset:
+  ocnli_trainval_path: ../tcdata/nlp_round1_data/OCNLI_train1128.csv
+  ocnli_train_path: ../user_data/preprocessed_data/ocnli_train.csv
+  ocnli_val_path: ../user_data/preprocessed_data/ocnli_dev.csv
+  ocnli_test_path: ../tcdata/nlp_round1_data/ocnli_test_B.csv
+
+  ocemotion_trainval_path: ../user_data/preprocessed_data/OCEMOTION_train1128_clean.csv
+  ocemotion_test_path: ../tcdata/nlp_round1_data/ocemotion_test_B.csv
+
+  tnews_trainval_path: ../user_data/preprocessed_data/tnews_trainval_t.csv
+  tnews_train_path: ../user_data/preprocessed_data/tnews_train.csv
+  tnews_val_path: ../user_data/preprocessed_data/tnews_dev.csv
+  tnews_test_path: ../tcdata/nlp_round1_data/tnews_test_B.csv
+
+  pretrained_model_name: ../user_data/checkpoints/chinese-roberta-wwm-ext-large
+  
+model:
+  pretrained_model_name: ../user_data/checkpoints/chinese-roberta-wwm-ext-large
+  hidden_size: 1024
+  pooling_method: first
+  share_architecture: hard
+  sample_loss: ce
+  targets_num_classes:
+    ocnli: 3
+    ocemotion: 7
+    tnews: 15
+  task_weights: uct
+
+solver:
+  batch_size: 32
+  accumulation_steps: 16
+  transformer_weight_decay: 0.01  # for pretrained transformer parameters
+  weight_decay: 0.01              # for non-transformer parameters
+  no_decay:
+    - bias
+    - LayerNorm.weight
+  optimizer: AdamW
+  transformer_initial_lr: 3.0e-5  # for pretrained transformer parameters
+  initial_lr: 3.0e-5              # for non-transformer model parameters
+  lr_schedule: warmup_linear
+  warmup_fraction: 0.06
+  num_epochs: 2
+  max_grad_norm: 1.0
+  
