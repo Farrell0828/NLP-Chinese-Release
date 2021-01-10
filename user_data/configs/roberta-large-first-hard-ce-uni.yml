@@ -5,12 +5,12 @@ dataset:
   ocnli_test_path: ../tcdata/nlp_round1_data/ocnli_test_B.csv
 
   ocemotion_trainval_path: ../user_data/preprocessed_data/OCEMOTION_train1128_clean.csv
-  ocemotion_test_path: ../tcdata/nlp_round1_data/ocemotion_test_B.csv
+  ocemotion_test_path: ../user_data/preprocessed_data/ocemotion_test_B_clean.csv
 
   tnews_trainval_path: ../user_data/preprocessed_data/tnews_trainval_t.csv
   tnews_train_path: ../user_data/preprocessed_data/tnews_train.csv
   tnews_val_path: ../user_data/preprocessed_data/tnews_dev.csv
-  tnews_test_path: ../tcdata/nlp_round1_data/tnews_test_B.csv
+  tnews_test_path: ../user_data/preprocessed_data/tnews_test_B_clean.csv
 
   pretrained_model_name: ../user_data/checkpoints/chinese-roberta-wwm-ext-large
   
