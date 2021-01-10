@@ -35,10 +35,10 @@ solver:
     - bias
     - LayerNorm.weight
   optimizer: AdamW
-  transformer_initial_lr: 3.0e-5  # for pretrained transformer parameters
-  initial_lr: 3.0e-5              # for non-transformer model parameters
+  transformer_initial_lr: 2.0e-5  # for pretrained transformer parameters
+  initial_lr: 2.0e-5              # for non-transformer model parameters
   lr_schedule: warmup_linear
   warmup_fraction: 0.06
-  num_epochs: 2
+  num_epochs: 1
   max_grad_norm: 1.0
   
