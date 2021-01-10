@@ -1,4 +1,4 @@
-name: nlpcc
+name: nlpc
 channels:
   - pytorch
   - defaults

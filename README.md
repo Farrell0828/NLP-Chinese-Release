@@ -64,14 +64,14 @@
 ```
 conda env create -f environment.yml
 ```
-3. 如果第2步运行成功，请忽悠这一步。如果失败，也可以逐行运行以下命令手动创建并安装依赖项：
+3. 如果第2步运行成功，请忽略这一步。如果失败，也可以逐行运行以下命令手动创建并安装依赖项：
 ```
 conda create -n nlpc python=3.7.6
 conda activate nlpc
 conda install pytorch=1.7.0 torchvision torchtext cudatoolkit=11.0 -c pytorch
 pip install transformers==3.5.1
 conda install notebook pandas matplotlib scikit-learn flake8 pyyaml
-pip install tensorboardx
+pip install tensorboardX
 conda install tensorboard
 pip install emojiswitch
 ```
@@ -111,7 +111,7 @@ python preprocess.py \
 1. CLUE 官方提供的 [OCNLI][2]，[CMNLI][3] 和 [TNEWS][4] 这三个任务的公开数据集；
 2. 公开可获取的 [今日头条新闻标题分类的数据集][5] 。
 
-`--output-dirpath` 为预处理后的文件的存放的文件夹路径，如果文件夹不存在会首先建立相应的文件夹。
+`--output-dirpath` 为预处理后的文件的存放的文件夹路径，如果文件夹不存在会首先建立相应的文件夹。示例中给出的路径为 `../user_data/repreprocessed_data/`，`../user_data/preprocessed_data/`目录下存放的为我们预处理好并上传的数据集，也是我们实际训练使用的数据集，两者应一致。(具体可能存在的微小不一致见后面的 [关于可复现性的说明](#关于可复现性的说明) 部分)
 
 所执行的预处理包括：
 - 从 CLUE 公开的 OCNLI，CMNLI 和 TNEWS 任务的 json 文件获取得到对应的训练集和验证集的 csv 文件并去掉标签为空的样本；
