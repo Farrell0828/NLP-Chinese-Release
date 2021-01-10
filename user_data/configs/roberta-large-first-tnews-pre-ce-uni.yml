@@ -1,21 +1,21 @@
 dataset:
-  ocnli_trainval_path: data/OCNLI_train1128.csv
-  ocnli_train_path: data/ocnli_train.csv
-  ocnli_val_path: data/ocnli_dev.csv
-  ocnli_test_path: data/OCNLI_a.csv
+  ocnli_trainval_path: ../tcdata/nlp_round1_data/OCNLI_train1128.csv
+  ocnli_train_path: ../user_data/preprocessed_data/ocnli_train.csv
+  ocnli_val_path: ../user_data/preprocessed_data/ocnli_dev.csv
+  ocnli_test_path: ../tcdata/nlp_round1_data/ocnli_test_B.csv
 
-  ocemotion_trainval_path: data/OCEMOTION_train1128_clean.csv
-  ocemotion_test_path: data/OCEMOTION_a_clean.csv
+  ocemotion_trainval_path: ../user_data/preprocessed_data/OCEMOTION_train1128_clean.csv
+  ocemotion_test_path: ../tcdata/nlp_round1_data/ocemotion_test_B.csv
 
-  tnews_trainval_path: data/tnews_trainval_t.csv
-  tnews_train_path: data/tnews_other.csv
-  tnews_val_path: data/tnews_dev.csv
-  tnews_test_path: data/TNEWS_a.csv
+  tnews_trainval_path: ../user_data/preprocessed_data/tnews_trainval_t.csv
+  tnews_train_path: ../user_data/preprocessed_data/tnews_other.csv
+  tnews_val_path: ../user_data/preprocessed_data/tnews_dev.csv
+  tnews_test_path: ../tcdata/nlp_round1_data/tnews_test_B.csv
 
-  pretrained_model_name: hfl/chinese-roberta-wwm-ext-large
+  pretrained_model_name: ../user_data/checkpoints/chinese-roberta-wwm-ext-large
   
 model:
-  pretrained_model_name: hfl/chinese-roberta-wwm-ext-large
+  pretrained_model_name: ../user_data/checkpoints/chinese-roberta-wwm-ext-large
   hidden_size: 1024
   pooling_method: first
   share_architecture: tnews

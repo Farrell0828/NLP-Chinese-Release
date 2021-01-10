@@ -2,28 +2,42 @@
 天池竞赛 <NLP中文预训练模型泛化能力挑战赛> 解决方案。
 
 - [NLP-Chinese](#nlp-chinese)
-  * [方案简介](#----)
-    + [模型结构](#----)
-  * [环境配置](#----)
-    + [训练环境](#----)
-    + [安装依赖](#----)
-  * [复现提交结果](#------)
-  * [数据预处理](#-----)
-  * [训练流程复现](#------)
-    + [数据集划分](#-----)
-    + [在 CMNLI 数据集上预训练 OCNLI 单任务模型](#--cmnli---------ocnli------)
-    + [在 OCNLI 数据集上继续预训练 OCNLI 单任务模型](#--ocnli-----------ocnli------)
-    + [在 TNEWS 额外数据集上预训练 TNEWS 单任务模型](#--tnews-----------tnews------)
-    + [在 TNEWS 数据集上继续预训练 TNEWS 单任务模型](#--tnews-----------tnews------)
-    + [在 OCEMOTION 数据集上预训练 OCEMOTION 单任务模型](#--ocemotion---------ocemotion------)
-    + [参数平均与融合](#-------)
-    + [在竞赛数据集上 Fine-Tune 多任务模型](#--------fine-tune------)
-  * [关于可复现性的说明](#---------)
-  * [预测](#--)
+  * [1 方案简介](#方案简介)
+    + [1.1 模型架构](#模型架构)
+    + [1.2 参数平均与融合](#参数平均与融合)
+    + [1.3 额外数据集](#额外数据集)
+    + [1.4 损失函数](#损失函数)
+  * [2 环境配置](#环境配置)
+    + [2.1 训练环境](#训练环境)
+    + [2.2 安装依赖](#安装依赖)
+  * [3 复现提交结果](#复现提交结果)
+  * [4 数据预处理](#数据预处理)
+  * [5 训练流程复现](#训练流程复现)
+    + [5.1 数据集划分](#数据集划分)
+    + [5.2 在CMNLI数据集上预训练OCNLI单任务模型](#在CMNLI数据集上预训练OCNLI单任务模型)
+    + [5.3 在OCNLI数据集上继续预训练OCNLI单任务模型](#在OCNLI数据集上继续预训练OCNLI单任务模型)
+    + [5.4 在TNEWS额外数据集上预训练TNEWS单任务模型](#在TNEWS额外数据集上预训练TNEWS单任务模型)
+    + [5.5 在TNEWS数据集上继续预训练TNEWS单任务模型](#在TNEWS数据集上继续预训练TNEWS单任务模型)
+    + [5.6 在OCEMOTION数据集上预训练OCEMOTION单任务模型](#在OCEMOTION数据集上预训练OCEMOTION单任务模型)
+    + [5.7 参数平均与融合](#参数平均与融合)
+    + [5.8 在竞赛数据集上Fine-Tune多任务模型](#在竞赛数据集上Fine-Tune多任务模型)
+  * [6 关于可复现性的说明](#关于可复现性的说明)
+  * [7 预测](#预测)
 
 ## 方案简介
-### 模型结构
-模型整体上为简单的硬共享模式，
+### 模型架构
+模型整体上为简单的硬共享模式，结构如下图1所示。
+
+![模型架构](./user_data/images/model.png)
+
+### 参数平均与融合
+为了给模型一个更好的初始化权重，我们先预训练了三个独立的单任务模型，然后将共享的 Transformer 部分的参数取均值，其余部分参数直接复制得到多任务模型的初始权重。如上图2所示。
+
+### 额外数据集
+在单任务模型的预训练中，OCNLI 与 TNEWS 这两个任务使用了额外的公开可获取的数据集以增强单任务模型的性能。
+
+### 损失函数
+单个样本的损失为交叉熵损失，一批样本中，先计算三个任务各自相关样本的损失均值，然后取三个均值的加权和作为一批样本的损失。最终方案三个任务损失的权重相同。
 
 
 ## 环境配置
@@ -67,14 +81,15 @@ cd code
 ```
 
 ## 复现提交结果
-为了方便快速复现我们最终提交的对于测试集B的预测结果，我们提供了最终的模型权重文件以及预处理过后的数据。可以通过以下两种方式的任一种生成提交结果：
+为了方便快速复现我们最终提交的对于测试集B的预测结果，我们提供了最终的模型权重文件以及预处理过后的数据。可以通过以下两种方式的任一种快速生成提交结果：
 
 1. 运行 `test.sh` 文件：
 ```
-sh tesh.sh
+chmod +x tesh.sh
+./tesh.sh
 ```
 
-2. 直接跳到最后 [预测](#--) 部分。
+2. 直接跳到最后 [预测](#预测) 部分。
 
 ## 数据预处理
 运行脚本 `preprocess.py` 会完成所有的数据预处理：
@@ -82,13 +97,13 @@ sh tesh.sh
 python preprocess.py \
     --input-tc-dirpath ../tcdata/nlp_round1_data/ \
     --input-additional-dirpath ../user_data/additional_data/ \
-    --output-dirpath ../user_data/preprocessed_data/
+    --output-dirpath ../user_data/repreprocessed_data/
 ```
  `--input-tc-dirpath` 需指定为天池提供的数据所在的文件夹路径。
 
 `--input-additional-dirpath` 为额外的公开数据集所在的文件夹路径。这些额外的数据包括：
 1. CLUE 官方提供的 [OCNLI][2]，[CMNLI][3] 和 [TNEWS][4] 这三个任务的公开数据集；
-2. 公开可获取的关于【今日头条新闻标题分类的数据集】。
+2. 公开可获取的 [今日头条新闻标题分类的数据集][5] 。
 
 `--output-dirpath` 为预处理后的文件的存放的文件夹路径，如果文件夹不存在会首先建立相应的文件夹。
 
@@ -103,7 +118,7 @@ python preprocess.py \
 ### 数据集划分
 对于 OCNLI 和 TNEWS 任务，因为 CLUE 原本的的数据已经切分好了训练集与验证集（训练集和验证集为分开的 `*_train.json` 和 `*_dev.json` 文件），考虑到官方划分的验证集更均衡，因此这两个任务直接使用官方的划分结果来切分训练集和验证集。对于 OCEMOTION 任务，随机划分20%作为验证集，其余作为训练集。
 
-### 在 CMNLI 数据集上预训练 OCNLI 单任务模型
+### 在CMNLI数据集上预训练OCNLI单任务模型
 这一步使用 CMNLI 的训练集加验证集为训练集，以 OCNLI 的验证集为验证集来预训练 OCNLI 单任务模型，使用的配置文件为 `roberta-large-first-ocnli-pre-ce-uni.yml`。
 
 运行以下命令执行这一步训练：
@@ -117,7 +132,7 @@ python train.py \
 
 每次训练运行（包括后面每一步的训练） `--save-dirpath` 指定的文件夹下除了保存验证集最优的模型权重文件 `checkpoint.pth` 之外，还会保存运行本次训练使用的配置文件 `config.yml`，训练过程的控制台输出 `log.txt` 以及用于使用 TensorBoard 可视化训练过程的 `events.out.tfevents` 文件。
 
-### 在 OCNLI 数据集上继续预训练 OCNLI 单任务模型
+### 在OCNLI数据集上继续预训练OCNLI单任务模型
 这一步首先加载上一步保存的模型权重，然后以 OCNLI 的训练集为训练集，以 OCNLI的验证集为验证集来继续预训练 OCNLI 单任务模型，使用的配置文件为 `roberta-large-first-ocnli-ce-uni.yml`
 
 运行以下命令执行这一步训练：
@@ -130,7 +145,7 @@ python train.py \
 ```
 应指定 `--load-pthpath` 命令行参数来加载上一步保存的 checkpoint。训练集样本数5万左右，以32的有效批样本数（因显存限制，梯度累计8步，实际批样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时1小时。
 
-### 在 TNEWS 额外数据集上预训练 TNEWS 单任务模型
+### 在TNEWS额外数据集上预训练TNEWS单任务模型
 这一步以处理后的今日头条标题分类额外数据集为训练集，以 TNEWS 验证集为验证集来预训练 TNEWS 单任务模型，使用的配置文件为 `roberta-large-first-tnews-pre-ce-uni.yml`。
 
 运行以下命令执行这一步训练：
@@ -142,7 +157,7 @@ python train.py \
 ```
 训练样本数大约23.5万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时3.5小时。
 
-### 在 TNEWS 数据集上继续预训练 TNEWS 单任务模型
+### 在TNEWS数据集上继续预训练TNEWS单任务模型
 这一步首先加载上一步保存的模型权重，然后以 TNEWS 训练集为训练集，以 TNEWS 验证集为验证集来继续预训练 TNEWS 单任务模型，使用的配置文件为 `roberta-large-first-tnews-ce-uni.yml`。
 
 运行以下命令执行这一步训练：
@@ -155,7 +170,7 @@ python train.py \
 ```
 训练样本数大约4.8万，以32的有效批样本数（因显存限制，梯度累计8步，实际样本为4）训练2个 epoch，每个 epoch 结束做一次验证，保存验证集最优的模型权重文件 `checkpoint.pth` 至 `--save-dirpath` 指定的文件夹。训练在单个 NVIDIA Tesla P100 GPU 上大约耗时50分钟。
 
-### 在 OCEMOTION 数据集上预训练 OCEMOTION 单任务模型
+### 在OCEMOTION数据集上预训练OCEMOTION单任务模型
 因为 OCEMOTION 没有使用相关的额外数据集，因此直接在竞赛数据集上预训练相应的单任务模型。80%数据作为训练集，20%数据作为验证集，使用的配置文件为 `roberta-large-first-ocemotion-ce-uni.yml`。
 
 运行以下命令执行这一步训练：
@@ -182,7 +197,7 @@ python param_avg.py \
 
 `--output-pthpath` 为新生成的模型权重 checkpoint 文件的路径。
 
-### 在竞赛数据集上 Fine-Tune 多任务模型
+### 在竞赛数据集上Fine-Tune多任务模型
 这一步将加载上一步平均与融合之后的模型权重为初始参数，在竞赛提供的所有三个数据集上 Fine-Tune 最终的多任务模型。
 
 运行以下命令执行这一步训练：
@@ -237,3 +252,4 @@ python predict.py \
 [2]: https://storage.googleapis.com/cluebenchmark/tasks/ocnli_public.zip
 [3]: https://storage.googleapis.com/cluebenchmark/tasks/cmnli_public.zip
 [4]: https://storage.googleapis.com/cluebenchmark/tasks/tnews_public.zip
+[5]: https://github.com/BenDerPan/toutiao-text-classfication-dataset

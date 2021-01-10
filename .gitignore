@@ -5,3 +5,5 @@ tcdata/
 prediction_result/
 user_data/*
 !user_data/configs
+!user_data/images
+

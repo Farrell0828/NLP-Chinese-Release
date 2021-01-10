@@ -148,25 +148,25 @@ def split_dev_train(path, path_dev, path_train):
 
 def create_tnews_dev_origin(input_additional_dirpath, output_dirpath):
     data = []
-    with open(input_additional_dirpath + 'tnews_public/dev.json', mode='r', encoding='utf-8') as f:
+    with open(os.path.join(input_additional_dirpath, 'tnews_public/dev.json'), mode='r', encoding='utf-8') as f:
         for line in f:
             data.append(json.loads(line))
     tnews_json_dev_df = pd.DataFrame(data)
     tnews_json_dev_df.index.name = 'id'
     tnews_json_dev_df['sentence'] = tnews_json_dev_df['sentence'].apply(strQ2B)
-    tnews_json_dev_df[['sentence', 'label']].to_csv(output_dirpath + 'tnews_dev_origin.csv', encoding='utf-8')
+    tnews_json_dev_df[['sentence', 'label']].to_csv(os.path.join(output_dirpath, 'tnews_dev_origin.csv'), encoding='utf-8')
 
 
 
 def create_tnews_train_origin(input_additional_dirpath, output_dirpath):
     data = []
-    with open(input_additional_dirpath + 'tnews_public/train.json', mode='r', encoding='utf-8') as f:
+    with open(os.path.join(input_additional_dirpath, 'tnews_public/train.json'), mode='r', encoding='utf-8') as f:
         for line in f:
             data.append(json.loads(line))
     tnews_json_dev_df = pd.DataFrame(data)
     tnews_json_dev_df.index.name = 'id'
     tnews_json_dev_df['sentence'] = tnews_json_dev_df['sentence'].apply(strQ2B)
-    tnews_json_dev_df[['sentence', 'label']].to_csv(output_dirpath + 'tnews_train_origin.csv', encoding = 'utf-8')
+    tnews_json_dev_df[['sentence', 'label']].to_csv(os.path.join(output_dirpath, 'tnews_train_origin.csv'), encoding = 'utf-8')
 
 
 
@@ -174,13 +174,13 @@ def tnews_data_pre(input_tc_dirpath, input_additional_dirpath, output_dirpath):
     create_tnews_dev_origin(input_additional_dirpath, output_dirpath)
     create_tnews_train_origin(input_additional_dirpath, output_dirpath)
 
-    origin_tnews_path = input_additional_dirpath + 'tnews_public/toutiao_cat_data.txt'
-    target_tnews_path = output_dirpath + 'TNEWS_train_new_banjiao.csv'
+    origin_tnews_path = os.path.join(input_additional_dirpath, 'toutiao_cat_data.txt')
+    target_tnews_path = os.path.join(output_dirpath, 'TNEWS_train_new_banjiao.csv')
 
-    origin_tnews_a = input_tc_dirpath + 'TNEWS_a.csv'
-    origin_tnews_dev = output_dirpath + 'tnews_dev_origin.csv'
-    origin_tnews_train = output_dirpath + 'tnews_train_origin.csv'
-    origin_tnews_other_banjiao = output_dirpath + 'TNEWS_train_new_banjiao.csv'
+    origin_tnews_a = os.path.join(input_tc_dirpath, 'TNEWS_a.csv')
+    origin_tnews_dev = os.path.join(output_dirpath, 'tnews_dev_origin.csv')
+    origin_tnews_train = os.path.join(output_dirpath, 'tnews_train_origin.csv')
+    origin_tnews_other_banjiao = os.path.join(output_dirpath, 'TNEWS_train_new_banjiao.csv')
 
     lists = [origin_tnews_a, origin_tnews_dev, origin_tnews_train, origin_tnews_other_banjiao]
     # save_path = 'data/duplicate_tnews/'
@@ -190,9 +190,9 @@ def tnews_data_pre(input_tc_dirpath, input_additional_dirpath, output_dirpath):
     # split_dev_train(tnews1128_path, origin_tnews_dev, origin_tnews_train)
     duplicated_recrate(read_path_csv(lists), output_dirpath, result_names)
 
-    tnews_dev = output_dirpath + 'tnews_dev.csv'
-    tnews_train = output_dirpath + 'tnews_train.csv'
-    tnews_trainval_t = output_dirpath + 'tnews_trainval_t.csv'
+    tnews_dev = os.path.join(output_dirpath, 'tnews_dev.csv')
+    tnews_train = os.path.join(output_dirpath, 'tnews_train.csv')
+    tnews_trainval_t = os.path.join(output_dirpath, 'tnews_trainval_t.csv')
 
     tnews_train_df = pd.read_csv(tnews_train, index_col = 0)
     tnews_val_df = pd.read_csv(tnews_dev, index_col = 0)
@@ -221,17 +221,17 @@ def read_json(origin_file_path,write_file_path):
 
 
 def get_ocnli_trainval(input_tc_dirpath, input_additional_dirpath, output_dirpath):
-    cmnli_train = output_dirpath + 'cmnli_train.csv'
-    cmnli_dev = output_dirpath + 'cmnli_dev.csv'
-    ocnli_train = output_dirpath + 'ocnli_train.csv'
-    ocnli_dev = output_dirpath + 'ocnli_dev.csv'
-    cmnli_trainval = output_dirpath + 'cmnli_trainval.csv'
-    ocnli_trainval = output_dirpath + 'ocnli_trainval.csv'
+    cmnli_train = os.path.join(output_dirpath, 'cmnli_train.csv')
+    cmnli_dev = os.path.join(output_dirpath, 'cmnli_dev.csv')
+    ocnli_train = os.path.join(output_dirpath, 'ocnli_train.csv')
+    ocnli_dev = os.path.join(output_dirpath, 'ocnli_dev.csv')
+    cmnli_trainval = os.path.join(output_dirpath, 'cmnli_trainval.csv')
+    ocnli_trainval = os.path.join(output_dirpath, 'ocnli_trainval.csv')
 
-    read_json(input_additional_dirpath + 'cmnli_public/train.json',cmnli_train)
-    read_json(input_additional_dirpath + 'cmnli_public/dev.json',cmnli_dev)
-    read_json(input_additional_dirpath + 'ocnli_public/train.50k.json',ocnli_train)
-    read_json(input_additional_dirpath + 'ocnli_public/dev.json',ocnli_dev)
+    read_json(os.path.join(input_additional_dirpath, 'cmnli_public/train.json'), cmnli_train)
+    read_json(os.path.join(input_additional_dirpath, 'cmnli_public/dev.json'), cmnli_dev)
+    read_json(os.path.join(input_additional_dirpath, 'ocnli_public/train.50k.json'), ocnli_train)
+    read_json(os.path.join(input_additional_dirpath, 'ocnli_public/dev.json'), ocnli_dev)
 
     # 把cmnli train和dev合并得到cmnli_trainval
     cmnli_train_df = pd.read_csv(cmnli_train, index_col=0)
@@ -260,7 +260,7 @@ import emojiswitch
 
 
 def replace_longSen(input_tc_dirpath, input_additional_dirpath, output_dirpath):
-    file_selinux = input_tc_dirpath + 'OCEMOTION_train1128.csv'
+    file_selinux = os.path.join(input_tc_dirpath, 'OCEMOTION_train1128.csv')
     temp_file_selinux = file_selinux + '_clean' + '.temp'
     re_sub_list = ''
     manyWord = ['?', '*', '.', ')', '(', '^']
@@ -300,9 +300,9 @@ def replace_longSen(input_tc_dirpath, input_additional_dirpath, output_dirpath):
             re_sub_list = re.sub('[A-Za-z]+', '', re_sub_list[:-20]) + re_sub_list[-20:]
             fw.writelines(re_sub_list)
     # os.remove(file_selinux)
-    if os.path.exists(output_dirpath + 'OCEMOTION_train1128_clean.csv'):
-        os.remove(output_dirpath + 'OCEMOTION_train1128_clean.csv')
-    os.rename(temp_file_selinux, output_dirpath + 'OCEMOTION_train1128_clean.csv')
+    if os.path.exists(os.path.join(output_dirpath, 'OCEMOTION_train1128_clean.csv')):
+        os.remove(os.path.join(output_dirpath, 'OCEMOTION_train1128_clean.csv'))
+    os.rename(temp_file_selinux, os.path.join(output_dirpath, 'OCEMOTION_train1128_clean.csv'))
 
 
 def selinux_config(origin_line,update_line, output_dirpath):
@@ -311,7 +311,7 @@ def selinux_config(origin_line,update_line, output_dirpath):
     修改文件内容
     :return:
     """
-    file_selinux = output_dirpath + 'OCEMOTION_train1128_clean.csv'
+    file_selinux = os.path.join(output_dirpath, 'OCEMOTION_train1128_clean.csv')
     temp_file_selinux = file_selinux + '_clean' + '.temp'
 
     with open(file_selinux, mode='r', encoding='utf-8') as fr, open(temp_file_selinux, mode='w', encoding='utf-8') as fw:
@@ -325,7 +325,7 @@ def selinux_config(origin_line,update_line, output_dirpath):
 def emotion_data_clean(input_tc_dirpath, input_additional_dirpath, output_dirpath):
     # 获取表情，dict
     emotion_df = []
-    with open(input_tc_dirpath + 'OCEMOTION_train1128.csv', 'r', encoding='utf-8') as f:
+    with open(os.path.join(input_tc_dirpath, 'OCEMOTION_train1128.csv'), 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip().split(' ')
             for word in line:
@@ -352,11 +352,10 @@ def emotion_data_clean(input_tc_dirpath, input_additional_dirpath, output_dirpat
 
 
 def test_convert(input_tc_dirpath, output_dirpath, test_file_path, write_file_path):
-    test = input_tc_dirpath + test_file_path
+    test = os.path.join(input_tc_dirpath + test_file_path)
     data = pd.read_csv(test, sep='\t', names=['id', 'sentence', 'label'], encoding='utf-8')
     data['sentence'] = data['sentence'].apply(strQ2B)
-    data.to_csv(output_dirpath + write_file_path, header=None, sep='\t', encoding='utf-8', index=False)
-
+    data.to_csv(os.path.join(output_dirpath + write_file_path), header=None, sep='\t', encoding='utf-8', index=False)
 
 
 '''*************************************    all    ******************************************'''
@@ -384,8 +383,6 @@ def all_data_pre(input_tc_dirpath, input_additional_dirpath, output_dirpath):
     test_convert(input_tc_dirpath, output_dirpath, 'ocemotion_test_B.csv', 'ocemotion_test_B_clean.csv')
     test_convert(input_tc_dirpath, output_dirpath, 'tnews_test_B.csv', 'tnews_test_B_clean.csv')
     print("test_B finished !!!")
-
-
 
 
 def main():
