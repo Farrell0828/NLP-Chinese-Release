@@ -25,8 +25,13 @@
   * [7 预测](#预测)
 
 ## 方案简介
+
 ### 模型架构
 模型整体上为简单的硬共享模式，结构如下图1所示。
+
+共享参数部分为一个 RoBERTa 模型，最优模型使用的预训练权重为 HuggingFace 的 transformers 库提供的 [hfl/chinese-roberta-wwm-ext-large][6]。相关预训练模型权重文件已下载并放到 `user_data/checkpoints/chinese-roberta-wwm-ext-large/` 文件夹内。取第一个 `[CLS]` Token 对应位置的最后一层隐含层输出为整个句子的特征表示。
+
+每个任务私有的部分都为一层全连接层，将 Transformer 的输出映射到对应的类别数量。
 
 ![模型架构](./user_data/images/model.png)
 
@@ -38,7 +43,6 @@
 
 ### 损失函数
 单个样本的损失为交叉熵损失，一批样本中，先计算三个任务各自相关样本的损失均值，然后取三个均值的加权和作为一批样本的损失。最终方案三个任务损失的权重相同。
-
 
 ## 环境配置
 
@@ -52,7 +56,7 @@
 |Python版本|3.7.6|
 
 ### 安装依赖
-推荐使用Conda安装所需依赖。
+推荐使用Conda安装所需依赖，我们提供了 `environment.yml` 文件来快速安装 Python，CUDA，以及所需的其他依赖。我们也提供了 `requirements.txt` 文件，列出了所需的 Python 依赖项。
 
 1. 从[官网][1]下载安装Miniconda或者Anaconda；
 2. 运行以下命令从我们提供的 `environment.yml` 文件创建一个名为 `nlpc` 的虚拟环境并安装所有需要的依赖项：
@@ -68,6 +72,7 @@ pip install transformers==3.5.1
 conda install notebook pandas matplotlib scikit-learn flake8 pyyaml
 pip install tensorboardx
 conda install tensorboard
+pip install emojiswitch
 ```
 
 4. 激活新建的虚拟环境（如果还未激活）：
@@ -253,3 +258,4 @@ python predict.py \
 [3]: https://storage.googleapis.com/cluebenchmark/tasks/cmnli_public.zip
 [4]: https://storage.googleapis.com/cluebenchmark/tasks/tnews_public.zip
 [5]: https://github.com/BenDerPan/toutiao-text-classfication-dataset
+[6]: https://huggingface.co/hfl/chinese-roberta-wwm-ext-large
