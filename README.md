@@ -268,6 +268,8 @@ python predict.py \
 
 - `SoftF1Loss`：不使用经典的交叉熵损失函数，而是使用 Soft F1 Loss 作为单样本的损失函数。模型性能没有明显提升。我们提供了相应的配置文件 `roberta-large-first-hard-f1-uni.yml`。
 
+需要说明的是，虽然以上提供的配置文件是以 RoBERTa-Large 模型为基础（因为我们提供的预训练模型权重是 Large 模型的权重），但由于时间限制，实际上这些方法时候奏效是在 RoBERTa-Base 模型上实验的。
+
 
 [1]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 [2]: https://storage.googleapis.com/cluebenchmark/tasks/ocnli_public.zip
